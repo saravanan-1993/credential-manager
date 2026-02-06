@@ -1,6 +1,6 @@
 "use client";
 
-import { Search, MoreVertical, Filter, X, Eye, Plus } from "lucide-react";
+import { Search, MoreVertical, Filter, X, Eye, Plus, Edit } from "lucide-react";
 import { useEffect, useState } from "react";
 import api from "@/lib/api";
 import { Client } from "@/types";
@@ -11,6 +11,7 @@ export default function ClientsPage() {
     const [clients, setClients] = useState<Client[]>([]);
     const [loading, setLoading] = useState(true);
     const [isModalOpen, setIsModalOpen] = useState(false);
+    const [editingClient, setEditingClient] = useState<Client | null>(null);
     const [menuOpen, setMenuOpen] = useState<string | null>(null);
 
     const fetchClients = async () => {
@@ -119,6 +120,15 @@ export default function ClientsPage() {
                                                 <Eye size={16} /> View Profile
                                             </Link>
                                             <button
+                                                onClick={() => {
+                                                    setEditingClient(client);
+                                                    setMenuOpen(null);
+                                                }}
+                                                className="flex items-center gap-2 px-4 py-3 text-sm text-gray-300 hover:bg-blue-600 hover:text-white transition-all w-full text-left"
+                                            >
+                                                <Edit size={16} /> Edit Client
+                                            </button>
+                                            <button
                                                 onClick={async () => {
                                                     if (confirm("Are you sure you want to delete this client?")) {
                                                         try {
@@ -151,6 +161,15 @@ export default function ClientsPage() {
                 onClose={() => setIsModalOpen(false)}
                 onSuccess={() => {
                     setIsModalOpen(false);
+                    fetchClients();
+                }}
+            />
+
+            <EditClientModal
+                client={editingClient}
+                onClose={() => setEditingClient(null)}
+                onSuccess={() => {
+                    setEditingClient(null);
                     fetchClients();
                 }}
             />
@@ -289,6 +308,202 @@ function CreateClientModal({ isOpen, onClose, onSuccess }: { isOpen: boolean; on
                                     className="px-6 py-2 bg-blue-600 hover:bg-blue-500 text-white rounded-xl font-medium transition-colors disabled:opacity-50"
                                 >
                                     {isLoading ? "creating..." : "Create Client"}
+                                </button>
+                            </div>
+                        </form>
+                    </motion.div>
+                </div>
+            )}
+        </AnimatePresence>
+    );
+}
+
+function EditClientModal({ client, onClose, onSuccess }: { client: Client | null; onClose: () => void; onSuccess: () => void }) {
+    const [formData, setFormData] = useState({
+        companyName: "",
+        contactPerson: "",
+        email: "",
+        phone: "",
+        projectType: "Web",
+        website: "",
+        status: "Active",
+        notes: "",
+        customProjectType: ""
+    });
+    const [isLoading, setIsLoading] = useState(false);
+
+    // Update form data when client changes
+    useEffect(() => {
+        if (client) {
+            const isCustomProjectType = !['Web', 'App', 'SaaS', 'SEO'].includes(client.projectType || 'Web');
+            setFormData({
+                companyName: client.companyName || "",
+                contactPerson: client.contactPerson || "",
+                email: client.email || "",
+                phone: client.phone || "",
+                projectType: isCustomProjectType ? 'Other' : (client.projectType || "Web"),
+                website: client.website || "",
+                status: client.status || "Active",
+                notes: client.notes || "",
+                customProjectType: isCustomProjectType ? (client.projectType || "") : ""
+            });
+        }
+    }, [client]);
+
+    const handleSubmit = async (e: React.FormEvent) => {
+        e.preventDefault();
+        if (!client?._id) return;
+
+        setIsLoading(true);
+        try {
+            const { customProjectType, ...baseData } = formData;
+            const payload = {
+                ...baseData,
+                projectType: formData.projectType === 'Other' ? customProjectType : formData.projectType
+            };
+
+            await api.put(`/api/clients/${client._id}`, payload);
+            onSuccess();
+        } catch (err: any) {
+            console.error("Failed to update client", err);
+            const errMsg = err.response?.data?.msg || err.message || "Unknown error";
+            alert(`Failed to update client: ${errMsg}`);
+        } finally {
+            setIsLoading(false);
+        }
+    };
+
+    return (
+        <AnimatePresence>
+            {client && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
+                    <motion.div
+                        initial={{ opacity: 0, scale: 0.95 }}
+                        animate={{ opacity: 1, scale: 1 }}
+                        exit={{ opacity: 0, scale: 0.95 }}
+                        className="w-full max-w-lg bg-[#111] border border-[#222] rounded-2xl shadow-2xl overflow-hidden"
+                    >
+                        <div className="flex items-center justify-between p-6 border-b border-[#222]">
+                            <h2 className="text-xl font-bold text-white">Edit Client</h2>
+                            <button onClick={onClose} className="text-gray-400 hover:text-white transition-colors">
+                                <X size={20} />
+                            </button>
+                        </div>
+                        <form onSubmit={handleSubmit} className="p-6 space-y-4 max-h-[70vh] overflow-y-auto">
+                            <div className="space-y-2">
+                                <label className="text-sm font-medium text-gray-300">Company Name</label>
+                                <input
+                                    type="text"
+                                    required
+                                    value={formData.companyName}
+                                    onChange={e => setFormData({ ...formData, companyName: e.target.value })}
+                                    className="w-full px-4 py-2 bg-[#1a1a1a] border border-[#333] rounded-xl text-white focus:outline-none focus:border-blue-500/50"
+                                    placeholder="Acme Corp"
+                                />
+                            </div>
+                            <div className="grid grid-cols-2 gap-4">
+                                <div className="space-y-2">
+                                    <label className="text-sm font-medium text-gray-300">Contact Person</label>
+                                    <input
+                                        type="text"
+                                        required
+                                        value={formData.contactPerson}
+                                        onChange={e => setFormData({ ...formData, contactPerson: e.target.value })}
+                                        className="w-full px-4 py-2 bg-[#1a1a1a] border border-[#333] rounded-xl text-white focus:outline-none focus:border-blue-500/50"
+                                        placeholder="John Doe"
+                                    />
+                                </div>
+                                <div className="space-y-2">
+                                    <label className="text-sm font-medium text-gray-300">Email</label>
+                                    <input
+                                        type="email"
+                                        required
+                                        value={formData.email}
+                                        onChange={e => setFormData({ ...formData, email: e.target.value })}
+                                        className="w-full px-4 py-2 bg-[#1a1a1a] border border-[#333] rounded-xl text-white focus:outline-none focus:border-blue-500/50"
+                                        placeholder="john@acme.com"
+                                    />
+                                </div>
+                            </div>
+                            <div className="grid grid-cols-2 gap-4">
+                                <div className="space-y-2">
+                                    <label className="text-sm font-medium text-gray-300">Phone</label>
+                                    <input
+                                        type="text"
+                                        value={formData.phone}
+                                        onChange={e => setFormData({ ...formData, phone: e.target.value })}
+                                        className="w-full px-4 py-2 bg-[#1a1a1a] border border-[#333] rounded-xl text-white focus:outline-none focus:border-blue-500/50"
+                                        placeholder="+1 234 567 8900"
+                                    />
+                                </div>
+                                <div className="space-y-2">
+                                    <label className="text-sm font-medium text-gray-300">Website</label>
+                                    <input
+                                        type="text"
+                                        value={formData.website}
+                                        onChange={e => setFormData({ ...formData, website: e.target.value })}
+                                        className="w-full px-4 py-2 bg-[#1a1a1a] border border-[#333] rounded-xl text-white focus:outline-none focus:border-blue-500/50"
+                                        placeholder="acme.com"
+                                    />
+                                </div>
+                            </div>
+                            <div className="grid grid-cols-2 gap-4">
+                                <div className="space-y-2">
+                                    <label className="text-sm font-medium text-gray-300">Project Type</label>
+                                    <select
+                                        value={formData.projectType}
+                                        onChange={e => setFormData({ ...formData, projectType: e.target.value })}
+                                        className="w-full px-4 py-2 bg-[#1a1a1a] border border-[#333] rounded-xl text-white focus:outline-none focus:border-blue-500/50"
+                                    >
+                                        <option value="Web">Web Development</option>
+                                        <option value="App">App Development</option>
+                                        <option value="SaaS">SaaS Product</option>
+                                        <option value="SEO">SEO</option>
+                                        <option value="Other">Other</option>
+                                    </select>
+                                    {formData.projectType === 'Other' && (
+                                        <input
+                                            type="text"
+                                            required
+                                            value={formData.customProjectType || ''}
+                                            onChange={e => setFormData({ ...formData, customProjectType: e.target.value })}
+                                            className="w-full px-4 py-2 mt-2 bg-[#1a1a1a] border border-[#333] rounded-xl text-white focus:outline-none focus:border-blue-500/50 animate-in fade-in slide-in-from-top-1"
+                                            placeholder="Specify Project Type"
+                                        />
+                                    )}
+                                </div>
+                                <div className="space-y-2">
+                                    <label className="text-sm font-medium text-gray-300">Status</label>
+                                    <select
+                                        value={formData.status}
+                                        onChange={e => setFormData({ ...formData, status: e.target.value })}
+                                        className="w-full px-4 py-2 bg-[#1a1a1a] border border-[#333] rounded-xl text-white focus:outline-none focus:border-blue-500/50"
+                                    >
+                                        <option value="Active">Active</option>
+                                        <option value="Inactive">Inactive</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div className="space-y-2">
+                                <label className="text-sm font-medium text-gray-300">Notes</label>
+                                <textarea
+                                    value={formData.notes}
+                                    onChange={e => setFormData({ ...formData, notes: e.target.value })}
+                                    className="w-full px-4 py-2 bg-[#1a1a1a] border border-[#333] rounded-xl text-white focus:outline-none focus:border-blue-500/50 min-h-[100px] resize-none"
+                                    placeholder="Additional notes about the client..."
+                                />
+                            </div>
+
+                            <div className="pt-4 flex justify-end gap-3 border-t border-[#222]">
+                                <button type="button" onClick={onClose} className="px-4 py-2 text-gray-300 hover:text-white transition-colors">
+                                    Cancel
+                                </button>
+                                <button
+                                    type="submit"
+                                    disabled={isLoading}
+                                    className="px-6 py-2 bg-blue-600 hover:bg-blue-500 text-white rounded-xl font-medium transition-colors disabled:opacity-50"
+                                >
+                                    {isLoading ? "Updating..." : "Update Client"}
                                 </button>
                             </div>
                         </form>
