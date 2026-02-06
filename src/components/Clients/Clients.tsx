@@ -173,11 +173,11 @@ function CreateClientModal({ isOpen, onClose, onSuccess }: { isOpen: boolean; on
         e.preventDefault();
         setIsLoading(true);
         try {
+            const { customProjectType, ...baseData } = formData;
             const payload = {
-                ...formData,
-                projectType: formData.projectType === 'Other' ? formData.customProjectType : formData.projectType
+                ...baseData,
+                projectType: formData.projectType === 'Other' ? customProjectType : formData.projectType
             };
-            delete payload.customProjectType; // Clean up payload
 
             await api.post('/api/clients', payload);
             onSuccess();
