@@ -165,6 +165,7 @@ function CreateClientModal({ isOpen, onClose, onSuccess }: { isOpen: boolean; on
         email: "",
         projectType: "Web",
         website: "",
+        customProjectType: ""
     });
     const [isLoading, setIsLoading] = useState(false);
 
@@ -172,7 +173,13 @@ function CreateClientModal({ isOpen, onClose, onSuccess }: { isOpen: boolean; on
         e.preventDefault();
         setIsLoading(true);
         try {
-            await api.post('/api/clients', formData);
+            const payload = {
+                ...formData,
+                projectType: formData.projectType === 'Other' ? formData.customProjectType : formData.projectType
+            };
+            delete payload.customProjectType; // Clean up payload
+
+            await api.post('/api/clients', payload);
             onSuccess();
         } catch (err: any) {
             console.error("Failed to create client", err);
@@ -249,6 +256,16 @@ function CreateClientModal({ isOpen, onClose, onSuccess }: { isOpen: boolean; on
                                         <option value="SEO">SEO</option>
                                         <option value="Other">Other</option>
                                     </select>
+                                    {formData.projectType === 'Other' && (
+                                        <input
+                                            type="text"
+                                            required
+                                            value={formData.customProjectType || ''}
+                                            onChange={e => setFormData({ ...formData, customProjectType: e.target.value })}
+                                            className="w-full px-4 py-2 mt-2 bg-[#1a1a1a] border border-[#333] rounded-xl text-white focus:outline-none focus:border-blue-500/50 animate-in fade-in slide-in-from-top-1"
+                                            placeholder="Specify Project Type"
+                                        />
+                                    )}
                                 </div>
                                 <div className="space-y-2">
                                     <label className="text-sm font-medium text-gray-300">Website</label>
