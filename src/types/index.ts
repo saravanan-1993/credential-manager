@@ -36,3 +36,30 @@ export interface User {
     email: string;
     role: 'admin' | 'member';
 }
+
+export interface Project {
+    _id?: string;
+    name: string;
+    client: string | Client;
+    description?: string;
+    github?: {
+        frontend?: string;
+        backend?: string;
+    };
+    env?: {
+        frontend?: string;
+        backend?: string;
+    };
+    deploymentUrls?: {
+        frontend?: string;
+        backend?: string;
+    };
+    status: 'Development' | 'Staging' | 'Production' | 'Maintenance' | 'Archived';
+    techStack?: {
+        frontend?: string;
+        backend?: string;
+    };
+    notes?: string;
+    createdAt?: string;
+    updatedAt?: string;
+}

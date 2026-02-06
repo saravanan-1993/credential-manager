@@ -1,6 +1,6 @@
 "use client";
 
-import { Home, Users, Database, Shield, FileText, Settings, LogOut, Command } from "lucide-react";
+import { Home, Users, Database, Shield, FileText, Settings, LogOut, Command, FolderGit } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
@@ -8,6 +8,7 @@ import { cn } from "@/lib/utils";
 const menuItems = [
     { name: "Dashboard", icon: Home, href: "/dashboard" },
     { name: "Clients", icon: Users, href: "/dashboard/clients" },
+    { name: "Projects", icon: FolderGit, href: "/dashboard/projects" },
     { name: "Asset Vault", icon: Database, href: "/dashboard/assets" },
     { name: "Expiry Tracker", icon: Shield, href: "/dashboard/expiry" },
     { name: "Reports", icon: FileText, href: "/dashboard/reports" },
