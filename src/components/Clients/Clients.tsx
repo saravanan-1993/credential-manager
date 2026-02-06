@@ -59,7 +59,7 @@ export default function ClientsPage() {
             </div>
 
             {/* Table */}
-            <div className="bg-[#111] border border-[#222] rounded-2xl overflow-hidden shadow-sm">
+            <div className="bg-[#111] border border-[#222] rounded-2xl shadow-sm">
                 <table className="w-full text-left">
                     <thead className="bg-[#1a1a1a] text-gray-400 text-sm font-medium border-b border-[#222]">
                         <tr>
