@@ -32,17 +32,6 @@ export default function Header() {
 
             {/* Right Section */}
             <div className="flex items-center gap-4">
-                {/* Search */}
-                <button className="p-2 hover:bg-[#1a1a1a] rounded-lg transition-colors text-gray-400 hover:text-white">
-                    <Search size={20} />
-                </button>
-
-                {/* Notifications */}
-                <button className="p-2 hover:bg-[#1a1a1a] rounded-lg transition-colors text-gray-400 hover:text-white relative">
-                    <Bell size={20} />
-                    <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-red-500 rounded-full"></span>
-                </button>
-
                 {/* User Menu */}
                 <div className="relative">
                     <button

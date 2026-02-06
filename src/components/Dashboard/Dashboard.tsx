@@ -162,13 +162,6 @@ export default function DashboardPage() {
                         </div>
                     </div>
 
-                    <div className="bg-[#111] border border-[#222] rounded-2xl p-6">
-                        <h3 className="text-lg font-semibold text-white mb-4">Recent Activity</h3>
-                        <div className="space-y-4">
-                            {/* Placeholder for activity */}
-                            <div className="text-gray-500 text-sm">No recent activity logged.</div>
-                        </div>
-                    </div>
                 </div>
 
                 {/* Right Sidebar */}

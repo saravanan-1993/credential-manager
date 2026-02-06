@@ -13,6 +13,7 @@ export default function ProjectsPage() {
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [editingProject, setEditingProject] = useState<Project | null>(null);
     const [menuOpen, setMenuOpen] = useState<string | null>(null);
+    const [searchQuery, setSearchQuery] = useState("");
 
     const fetchProjects = async () => {
         try {
@@ -28,6 +29,17 @@ export default function ProjectsPage() {
     useEffect(() => {
         fetchProjects();
     }, []);
+
+    const filteredProjects = projects.filter(project => {
+        const query = searchQuery.toLowerCase();
+        const clientName = typeof project.client === 'object' ? project.client.companyName : '';
+        return (
+            project.name.toLowerCase().includes(query) ||
+            (project.description && project.description.toLowerCase().includes(query)) ||
+            clientName.toLowerCase().includes(query) ||
+            project.status.toLowerCase().includes(query)
+        );
+    });
 
     if (loading) return <div className="text-white p-8">Loading Projects...</div>;
 
@@ -45,6 +57,8 @@ export default function ProjectsPage() {
                         <input
                             type="text"
                             placeholder="Search projects..."
+                            value={searchQuery}
+                            onChange={(e) => setSearchQuery(e.target.value)}
                             className="bg-[#111] border border-[#222] text-white pl-10 pr-4 py-2.5 rounded-xl focus:outline-none focus:border-blue-500/50 focus:ring-2 focus:ring-blue-500/20 w-full md:w-64 transition-all"
                         />
                     </div>
@@ -73,7 +87,7 @@ export default function ProjectsPage() {
                         </tr>
                     </thead>
                     <tbody className="divide-y divide-[#222]">
-                        {projects.map((project: Project) => (
+                        {filteredProjects.map((project: Project) => (
                             <tr key={project._id} className="hover:bg-[#161616] transition-colors group">
                                 <td className="px-6 py-4">
                                     <div className="flex items-center gap-4">

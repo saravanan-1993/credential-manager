@@ -13,6 +13,7 @@ export default function ClientsPage() {
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [editingClient, setEditingClient] = useState<Client | null>(null);
     const [menuOpen, setMenuOpen] = useState<string | null>(null);
+    const [searchQuery, setSearchQuery] = useState("");
 
     const fetchClients = async () => {
         try {
@@ -28,6 +29,16 @@ export default function ClientsPage() {
     useEffect(() => {
         fetchClients();
     }, []);
+
+    const filteredClients = clients.filter(client => {
+        const query = searchQuery.toLowerCase();
+        return (
+            client.companyName.toLowerCase().includes(query) ||
+            client.contactPerson.toLowerCase().includes(query) ||
+            client.email.toLowerCase().includes(query) ||
+            (client.projectType && client.projectType.toLowerCase().includes(query))
+        );
+    });
 
     if (loading) return <div className="text-white p-8">Loading Clients...</div>;
 
@@ -45,6 +56,8 @@ export default function ClientsPage() {
                         <input
                             type="text"
                             placeholder="Search clients..."
+                            value={searchQuery}
+                            onChange={(e) => setSearchQuery(e.target.value)}
                             className="bg-[#111] border border-[#222] text-white pl-10 pr-4 py-2.5 rounded-xl focus:outline-none focus:border-blue-500/50 focus:ring-2 focus:ring-blue-500/20 w-full md:w-64 transition-all"
                         />
                     </div>
@@ -60,7 +73,7 @@ export default function ClientsPage() {
             </div>
 
             {/* Table */}
-            <div className="bg-[#111] border border-[#222] rounded-2xl shadow-sm">
+            <div className="bg-[#111] border border-[#222] rounded-2xl shadow-sm overflow-visible">
                 <table className="w-full text-left">
                     <thead className="bg-[#1a1a1a] text-gray-400 text-sm font-medium border-b border-[#222]">
                         <tr>
@@ -72,7 +85,7 @@ export default function ClientsPage() {
                         </tr>
                     </thead>
                     <tbody className="divide-y divide-[#222]">
-                        {clients.map((client: Client) => (
+                        {filteredClients.map((client: Client) => (
                             <tr key={client._id} className="hover:bg-[#161616] transition-colors group cursor-pointer">
                                 <td className="px-6 py-4">
                                     <div className="flex items-center gap-4">
